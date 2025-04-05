@@ -22,10 +22,12 @@ app.use("/api/auth", authRoutes);
 const requestRoutes = require("./routes/requests");
 const pickupRoutes = require("./routes/pickup");
 const bloodRequestRoutes = require("./routes/bloodRequestRoutes");
+const donationRoutes = require("./routes/donations");
 
 app.use("/api/requests", requestRoutes);
 app.use("/api/pickups", pickupRoutes);
 app.use("/api/blood-requests", bloodRequestRoutes);
+app.use("/api/donations", donationRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server running on port ${process.env.PORT}`);

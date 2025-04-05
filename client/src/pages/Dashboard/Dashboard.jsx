@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Hero from "../../components/Hero";
 import RequestCard from "../../components/RequestCard";
+import DonationCard from "../../components/DonationCard";
 import SchedulePickup from "../../components/SchedulePickup";
 import Toast from "../../components/Toast";
 import { useAuth } from "../../context/AuthContext";
@@ -14,7 +15,8 @@ const ENDPOINTS = {
   AUTH: `${API_BASE_URL}/api/auth/me`,
   REQUESTS: `${API_BASE_URL}/api/requests`,
   PICKUPS: `${API_BASE_URL}/api/pickups`,
-  USER_DONATIONS: `${API_BASE_URL}/api/pickups/user`,
+  USER_DONATIONS: `${API_BASE_URL}/api/donations/user`,
+  DONATIONS: `${API_BASE_URL}/api/donations`,
 };
 
 export default function Dashboard() {
@@ -28,16 +30,17 @@ export default function Dashboard() {
     livesImpacted: 0,
   });
 
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  
   const [requests, setRequests] = useState([]);
   const [donations, setDonations] = useState([]);
-  const [activeTab, setActiveTab] = useState("requests");
+  const [activeTab, setActiveTab] = useState(user?.role === "donor" ? "donations" : "requests");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 6;
-  const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   
   const token = localStorage.getItem("token");
 

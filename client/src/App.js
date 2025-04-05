@@ -3,6 +3,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import RequestBlood from "./pages/RequestBlood";
+import DonateBlood from "./pages/DonateBlood";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -25,6 +26,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/request-blood" element={<ProtectedRoute><RequestBlood /></ProtectedRoute>} />
+              <Route path="/donate-blood" element={<ProtectedRoute><DonateBlood /></ProtectedRoute>} />
             </Routes>
           </main>
         </div>
