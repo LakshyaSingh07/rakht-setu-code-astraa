@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ToastContext';
 
 const AuthContext = createContext();
 
@@ -11,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -25,17 +27,31 @@ export const AuthProvider = ({ children }) => {
         const res = await axios.get('http://localhost:5000/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setUser(res.data.user);
+        if (res.data.user) {
+          setUser(res.data.user);
+        } else {
+          localStorage.removeItem('token');
+          showToast('Session expired. Please login again.', 'error');
+          setError('Session expired. Please login again.');
+        }
       } catch (err) {
-        localStorage.removeItem('token');
-        setError('Session expired. Please login again.');
+        console.error('Auth error:', err);
+        // Only remove token if it's an authentication error
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          showToast('Session expired. Please login again.', 'error');
+          setError('Session expired. Please login again.');
+        } else {
+          // For other errors (like network issues), keep the token and just show an error
+          setError('Error connecting to server. Please try again later.');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     checkLoggedIn();
-  }, []);
+  }, [showToast]); // Add showToast to dependency array
 
   // Register user
   const register = async (userData) => {

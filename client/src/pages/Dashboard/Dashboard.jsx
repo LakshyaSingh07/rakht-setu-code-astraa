@@ -41,11 +41,7 @@ export default function Dashboard() {
   
   const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
+  // Authentication is now handled by the ProtectedRoute component
 
   useEffect(() => {
     if (!user) return;

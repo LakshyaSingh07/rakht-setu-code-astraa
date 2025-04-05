@@ -18,6 +18,7 @@ module.exports = async function (req, res, next) {
     }
 
     req.user = user;
+    req.userId = user._id; // Add userId to request object
     next();
   } catch (err) {
     console.error("Auth middleware error:", err);

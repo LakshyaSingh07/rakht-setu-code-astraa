@@ -11,14 +11,13 @@ const User = require("../models/User");
 // @access  Private (Add auth later)
 router.post("/", async (req, res) => {
   try {
-    // const { bloodGroup, units, location, requestedBy } = req.body;
-    const { bloodGroup, units } = req.body;
+    const { bloodGroup, units, location } = req.body;
 
     const bloodRequest = await BloodRequest.create({
       bloodGroup,
       units,
-      // location,
-      // requestedBy,
+      location,
+      requestedBy: req.user.id
     });
 
     // Find donors with matching blood group
