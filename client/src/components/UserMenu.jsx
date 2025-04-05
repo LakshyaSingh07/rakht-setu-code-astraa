@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const UserMenu = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const menuRef = useRef(null);
 
   const { logout } = useAuth();
   
@@ -12,8 +13,22 @@ const UserMenu = ({ user }) => {
     logout();
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 text-white hover:text-primary-200 focus:outline-none"
@@ -33,7 +48,7 @@ const UserMenu = ({ user }) => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 py-1 mt-2 w-48 bg-white rounded-md ring-1 ring-black ring-opacity-5 shadow-lg">
+        <div className="absolute right-0 z-50 py-1 mt-2 w-48 bg-white rounded-md ring-1 ring-black ring-opacity-5 shadow-lg">
           <button
             onClick={() => navigate('/profile')}
             className="block px-4 py-2 w-full text-sm text-left text-gray-700 hover:bg-gray-100"

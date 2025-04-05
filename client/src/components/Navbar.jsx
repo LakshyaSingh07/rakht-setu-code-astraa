@@ -10,7 +10,7 @@ const Navbar = () => {
       <div className="flex justify-between items-center container-custom">
         <div className="flex items-center space-x-8">
           <Link to="/" className="text-2xl font-bold tracking-tight transition-colors hover:text-primary-200">
-            Life Bridge
+            Rakht Setu
           </Link>
           <div className="hidden space-x-6 md:flex">
             <Link to="/dashboard" className="text-white nav-link hover:text-primary-200">

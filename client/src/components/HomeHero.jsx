@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import bloodDrop from "../assets/blood-drop.svg";
 
 const HomeHero = () => {
   const stats = [
@@ -10,6 +11,14 @@ const HomeHero = () => {
 
   return (
     <div className="overflow-hidden relative bg-white">
+      {/* Blood drop image positioned on the right side */}
+      <div className="hidden absolute top-0 right-0 z-0 w-1/4 h-3/4 lg:block">
+        <img 
+          src={bloodDrop} 
+          alt="Blood drop" 
+          className="object-contain absolute top-0 right-0 h-full opacity-80"
+        />
+      </div>
       <div className="mx-auto max-w-7xl">
         <div className="relative z-10 pb-8 sm:pb-16 md:pb-20 lg:w-full lg:max-w-2xl lg:pb-28 xl:pb-32">
           <main className="px-4 mx-auto mt-10 max-w-7xl sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
