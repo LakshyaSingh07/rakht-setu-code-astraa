@@ -2,7 +2,7 @@
 
 Rakht Setu (Life Bridge) is a comprehensive blood donation management platform that connects blood donors with recipients in need. The application facilitates blood donation requests, donor registration, blood pickup scheduling, and donation tracking.
 
-![Rakht Setu](client/public/logo192.png)
+![Rakht Setu](client/public/favicon.png)
 
 ## Features
 
