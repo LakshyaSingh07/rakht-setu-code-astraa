@@ -52,7 +52,7 @@ const DonationCard = ({ donation = {} }) => {
                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
               />
             </svg>
-            {donation.date ? `${donation.date} at ${donation.time}` : "Date not specified"}
+            {donation.availableDate ? `${donation.availableDate} at ${donation.availableTime}` : "Date not specified"}
           </p>
         </div>
         <div className="text-right">
@@ -69,14 +69,15 @@ const DonationCard = ({ donation = {} }) => {
         <div className="flex items-center space-x-3">
           <div className="flex justify-center items-center w-10 h-10 bg-white rounded-full ring-2 ring-gray-200">
             <span className="text-lg font-semibold text-gray-700">
-              {donation.recipient?.name
-                ? donation.recipient.name.charAt(0)
-                : "R"}
+              {donation.recipientId?.name
+                ? donation.recipientId.name.charAt(0)
+                : donation.status === "pending" ? "P" : "R"}
             </span>
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-900">
-              {donation.recipient?.name || "Recipient not assigned yet"}
+              {donation.recipientId?.name || 
+               (donation.status === "pending" ? "Pending Assignment" : "No Recipient Assigned")}
             </p>
             <p className="flex items-center text-xs text-gray-600">
               <svg

@@ -7,6 +7,7 @@ const SchedulePickup = ({ request, onClose, onSubmit }) => {
     time: '',
     location: ''
   });
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -89,15 +90,52 @@ const SchedulePickup = ({ request, onClose, onSubmit }) => {
           {step === 2 && (
             <div>
               <label className="form-label">Pickup Location</label>
-              <textarea
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                className="input-field"
-                rows="3"
-                placeholder="Enter your complete address"
-                required
-              />
+              <div className="flex space-x-2">
+                <textarea
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="input-field flex-grow"
+                  rows="3"
+                  placeholder="Enter your complete address"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if ("geolocation" in navigator) {
+                      setLocationLoading(true);
+                      navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                          const { latitude, longitude } = position.coords;
+                          setFormData({
+                            ...formData,
+                            location: `${latitude}, ${longitude}`
+                          });
+                          setLocationLoading(false);
+                        },
+                        (error) => {
+                          console.error("Error getting location:", error.message);
+                          alert(`Failed to get location: ${error.message}`);
+                          setLocationLoading(false);
+                        }
+                      );
+                    } else {
+                      alert("Geolocation is not supported by your browser");
+                    }
+                  }}
+                  className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 self-start"
+                  disabled={locationLoading}
+                >
+                  {locationLoading ? (
+                    <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin"></div>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
           )}
 

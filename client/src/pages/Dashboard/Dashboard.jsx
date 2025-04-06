@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState("success");
+  const [location, setLocation] = useState("");
   const [stats, setStats] = useState({
     totalDonations: 0,
     activeRequests: 0,
@@ -56,7 +57,10 @@ export default function Dashboard() {
       axios
         .get(ENDPOINTS.REQUESTS, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { bloodGroup: bloodGroupFilter || undefined }
+          params: { 
+            bloodGroup: bloodGroupFilter || undefined,
+            excludeCompletedPickups: true // Add parameter to exclude requests with completed pickups
+          }
         })
         .then((res) => {
           setRequests(res.data);
@@ -71,38 +75,7 @@ export default function Dashboard() {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
-          // This is a mock implementation since the endpoint doesn't exist yet
-          // In a real app, this would come from the API
-          const mockDonations = [
-            {
-              _id: "1",
-              date: "2023-05-15",
-              time: "10:30",
-              bloodGroup: "A+",
-              units: 1,
-              recipient: { name: "City Hospital" },
-              status: "completed"
-            },
-            {
-              _id: "2",
-              date: "2023-06-20",
-              time: "14:00",
-              bloodGroup: "A+",
-              units: 1,
-              recipient: { name: "Red Cross Center" },
-              status: "completed"
-            },
-            {
-              _id: "3",
-              date: "2023-08-05",
-              time: "09:15",
-              bloodGroup: "A+",
-              units: 1,
-              recipient: { name: "Community Clinic" },
-              status: "pending"
-            }
-          ];
-          setDonations(mockDonations);
+          setDonations(res.data);
         })
         .catch((err) => console.error("Error fetching donations:", err));
     }
@@ -155,7 +128,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Hero stats={stats} />
 
-      <div className="py-8 container-custom">
+      <div className="py-8 container-custom px-4 sm:px-6 lg:px-8">
         {user.role === "recipient" ? (
           <>
             <h2 className="section-title">Request Blood</h2>
@@ -167,6 +140,12 @@ export default function Dashboard() {
                   const form = e.target;
                   const bloodGroup = form.bloodGroup.value;
                   const units = form.units.value;
+                  
+                  // Validate location
+                  if (!location) {
+                    showToastMessage("Please provide your location", "error");
+                    return;
+                  }
 
                   axios
                     .post(
@@ -174,6 +153,7 @@ export default function Dashboard() {
                       {
                         bloodGroup,
                         units,
+                        location,
                       },
                       {
                         headers: { Authorization: `Bearer ${token}` },
@@ -207,6 +187,45 @@ export default function Dashboard() {
                     placeholder="Number of units"
                     required
                   />
+                </div>
+                <div>
+                  <label className="form-label">Location</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      name="location"
+                      className="input-field flex-grow"
+                      placeholder="Your location"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      required
+                      readOnly
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        if ("geolocation" in navigator) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              const { latitude, longitude } = position.coords;
+                              setLocation(`${latitude}, ${longitude}`);
+                              showToastMessage("Location fetched successfully", "success");
+                            },
+                            (error) => {
+                              console.log("Location error:", error.message);
+                              showToastMessage("Failed to get location: " + error.message, "error");
+                            }
+                          );
+                        } else {
+                          showToastMessage("Geolocation is not supported by your browser", "error");
+                        }
+                      }}
+                      className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
                 <button className="w-full btn-primary">Submit Request</button>
               </form>
@@ -347,7 +366,7 @@ export default function Dashboard() {
                         {donations.map((donation) => (
                           <tr key={donation._id}>
                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                              {formatDate(`${donation.date}T${donation.time}`)}
+                              {formatDate(`${donation.availableDate}T${donation.availableTime}`)}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                               {donation.bloodGroup}

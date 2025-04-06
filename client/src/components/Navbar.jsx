@@ -1,7 +1,7 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import UserMenu from "./UserMenu";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, isAuthenticated } = useAuth();
@@ -25,6 +25,14 @@ const Navbar = () => {
             <Link to="/about" className="text-white nav-link hover:text-primary-200">
               About
             </Link>
+            {user && user.isAdmin && (
+              <Link to="/admin" className="text-white nav-link hover:text-primary-200 flex items-center">
+                <span>Admin</span>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.35-.035-.691-.1-1.021A5 5 0 0010 11z" clipRule="evenodd" />
+                </svg>
+              </Link>
+            )}
           </div>
         </div>
         <div className="flex items-center space-x-4">
