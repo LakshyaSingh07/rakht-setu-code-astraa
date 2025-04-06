@@ -33,34 +33,36 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  
+
   const [requests, setRequests] = useState([]);
   const [donations, setDonations] = useState([]);
-  const [activeTab, setActiveTab] = useState(user?.role === "donor" ? "donations" : "requests");
+  const [activeTab, setActiveTab] = useState(
+    user?.role === "donor" ? "donations" : "requests"
+  );
   const [bloodGroupFilter, setBloodGroupFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 6;
-  
+
   const token = localStorage.getItem("token");
 
   // Authentication is now handled by the ProtectedRoute component
 
   useEffect(() => {
     if (!user) return;
-    
+
     setLoading(true);
-    
+
     if (user.role === "donor") {
       // Fetch blood requests
       axios
         .get(ENDPOINTS.REQUESTS, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { 
+          params: {
             bloodGroup: bloodGroupFilter || undefined,
-            excludeCompletedPickups: true // Add parameter to exclude requests with completed pickups
-          }
+            excludeCompletedPickups: true, // Add parameter to exclude requests with completed pickups
+          },
         })
         .then((res) => {
           setRequests(res.data);
@@ -68,7 +70,7 @@ export default function Dashboard() {
         })
         .catch((err) => console.error(err))
         .finally(() => setLoading(false));
-      
+
       // Fetch user's donation history
       axios
         .get(ENDPOINTS.USER_DONATIONS, {
@@ -84,8 +86,10 @@ export default function Dashboard() {
   useEffect(() => {
     // Calculate stats based on requests and donations
     // In a real app, this would come from your API
-    const completedDonations = donations.filter(d => d.status === "completed").length;
-    
+    const completedDonations = donations.filter(
+      (d) => d.status === "completed"
+    ).length;
+
     setStats({
       totalDonations: completedDonations,
       activeRequests: requests.length,
@@ -115,10 +119,10 @@ export default function Dashboard() {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -128,107 +132,148 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <Hero stats={stats} />
 
-      <div className="py-8 container-custom px-4 sm:px-6 lg:px-8">
+      <div className="items-center justify-center py-8 container-custom px-4 sm:px-6 lg:px-8">
         {user.role === "recipient" ? (
           <>
-            <h2 className="section-title">Request Blood</h2>
-            <div className="max-w-lg">
-              <form
-                className="space-y-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const form = e.target;
-                  const bloodGroup = form.bloodGroup.value;
-                  const units = form.units.value;
-                  
-                  // Validate location
-                  if (!location) {
-                    showToastMessage("Please provide your location", "error");
-                    return;
-                  }
+            <h2 className="text-2xl font-bold text-center text-primary-700 mb-6">
+              Request Blood
+            </h2>
+            <div className="flex items-center justify-center bg-beige-100 px-4">
+              <div className="flex items-center max-w-sm bg-white shadow-lg rounded-2xl p-8 w-full">
+                <form
+                  className="space-y-5 w-full"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.target;
+                    const bloodGroup = form.bloodGroup.value;
+                    const units = form.units.value;
 
-                  axios
-                    .post(
-                      ENDPOINTS.REQUESTS,
-                      {
-                        bloodGroup,
-                        units,
-                        location,
-                      },
-                      {
-                        headers: { Authorization: `Bearer ${token}` },
-                      }
-                    )
-                    .then(() => {
-                      showToastMessage("Request submitted successfully!");
-                      form.reset();
-                    })
-                    .catch((err) =>
-                      showToastMessage(err.response.data.message, "error")
-                    );
-                }}
-              >
-                <div>
-                  <label className="form-label">Blood Group</label>
-                  <input
-                    name="bloodGroup"
-                    className="input-field"
-                    placeholder="e.g. A+, B-, O+"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Units Required</label>
-                  <input
-                    name="units"
-                    className="input-field"
-                    type="number"
-                    min="1"
-                    placeholder="Number of units"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label">Location</label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      name="location"
-                      className="input-field flex-grow"
-                      placeholder="Your location"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
+                    if (!location) {
+                      showToastMessage("Please provide your location", "error");
+                      return;
+                    }
+
+                    axios
+                      .post(
+                        ENDPOINTS.REQUESTS,
+                        { bloodGroup, units, location },
+                        { headers: { Authorization: `Bearer ${token}` } }
+                      )
+                      .then(() => {
+                        showToastMessage("Request submitted successfully!");
+                        form.reset();
+                      })
+                      .catch((err) =>
+                        showToastMessage(err.response.data.message, "error")
+                      );
+                  }}
+                >
+                  {/* Blood Group Dropdown */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Blood Group
+                    </label>
+                    <select
+                      name="bloodGroup"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
                       required
-                      readOnly
-                    />
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        if ("geolocation" in navigator) {
-                          navigator.geolocation.getCurrentPosition(
-                            (position) => {
-                              const { latitude, longitude } = position.coords;
-                              setLocation(`${latitude}, ${longitude}`);
-                              showToastMessage("Location fetched successfully", "success");
-                            },
-                            (error) => {
-                              console.log("Location error:", error.message);
-                              showToastMessage("Failed to get location: " + error.message, "error");
-                            }
-                          );
-                        } else {
-                          showToastMessage("Geolocation is not supported by your browser", "error");
-                        }
-                      }}
-                      className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                      </svg>
-                    </button>
+                      <option value="" disabled selected>
+                        Select blood group
+                      </option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                    </select>
                   </div>
-                </div>
-                <button className="w-full btn-primary">Submit Request</button>
-              </form>
+
+                  {/* Units */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Units Required
+                    </label>
+                    <input
+                      name="units"
+                      type="number"
+                      min="1"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                      placeholder="Number of units"
+                      required
+                    />
+                  </div>
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location
+                    </label>
+                    <div className="flex space-x-2">
+                      <input
+                        name="location"
+                        className="flex-grow px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Your location"
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        required
+                        readOnly
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if ("geolocation" in navigator) {
+                            navigator.geolocation.getCurrentPosition(
+                              (position) => {
+                                const { latitude, longitude } = position.coords;
+                                setLocation(`${latitude}, ${longitude}`);
+                                showToastMessage(
+                                  "Location fetched successfully",
+                                  "success"
+                                );
+                              },
+                              (error) => {
+                                console.log("Location error:", error.message);
+                                showToastMessage(
+                                  "Failed to get location: " + error.message,
+                                  "error"
+                                );
+                              }
+                            );
+                          } else {
+                            showToastMessage(
+                              "Geolocation is not supported by your browser",
+                              "error"
+                            );
+                          }
+                        }}
+                        className="p-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Submit */}
+                  <button className="w-full py-2 px-4 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    Submit Request
+                  </button>
+                </form>
+              </div>
             </div>
           </>
         ) : (
@@ -238,13 +283,21 @@ export default function Dashboard() {
               <div className="flex border-b border-gray-200">
                 <button
                   onClick={() => setActiveTab("requests")}
-                  className={`px-4 py-2 font-medium text-sm ${activeTab === "requests" ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-2 font-medium text-sm ${
+                    activeTab === "requests"
+                      ? "text-primary-600 border-b-2 border-primary-600"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   Blood Requests
                 </button>
                 <button
                   onClick={() => setActiveTab("donations")}
-                  className={`px-4 py-2 font-medium text-sm ${activeTab === "donations" ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-2 font-medium text-sm ${
+                    activeTab === "donations"
+                      ? "text-primary-600 border-b-2 border-primary-600"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   My Donations
                 </button>
@@ -254,7 +307,9 @@ export default function Dashboard() {
             {activeTab === "requests" && (
               <>
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="mb-0 section-title">Blood Requests Near You</h2>
+                  <h2 className="mb-0 section-title">
+                    Blood Requests Near You
+                  </h2>
                   <div className="w-48">
                     <select
                       value={bloodGroupFilter}
@@ -282,8 +337,8 @@ export default function Dashboard() {
                   <div className="py-12 text-center">
                     <p className="text-gray-500">No blood requests found</p>
                     {bloodGroupFilter && (
-                      <button 
-                        onClick={() => setBloodGroupFilter('')}
+                      <button
+                        onClick={() => setBloodGroupFilter("")}
                         className="mt-2 text-primary-600 hover:underline"
                       >
                         Clear filter
@@ -313,11 +368,18 @@ export default function Dashboard() {
                           >
                             Previous
                           </button>
-                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                          {Array.from(
+                            { length: totalPages },
+                            (_, i) => i + 1
+                          ).map((pageNum) => (
                             <button
                               key={pageNum}
                               onClick={() => handlePageChange(pageNum)}
-                              className={`px-3 py-1 rounded-md ${pageNum === page ? 'bg-primary-600 text-white' : 'border border-gray-300'}`}
+                              className={`px-3 py-1 rounded-md ${
+                                pageNum === page
+                                  ? "bg-primary-600 text-white"
+                                  : "border border-gray-300"
+                              }`}
                             >
                               {pageNum}
                             </button>
@@ -342,8 +404,10 @@ export default function Dashboard() {
                 <h2 className="mb-6 section-title">My Donation History</h2>
                 {donations.length === 0 ? (
                   <div className="py-12 text-center">
-                    <p className="text-gray-500">You haven't made any donations yet</p>
-                    <button 
+                    <p className="text-gray-500">
+                      You haven't made any donations yet
+                    </p>
+                    <button
                       onClick={() => setActiveTab("requests")}
                       className="mt-2 text-primary-600 hover:underline"
                     >
@@ -355,18 +419,30 @@ export default function Dashboard() {
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Date</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Blood Group</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Units</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Recipient</th>
-                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Status</th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                            Date
+                          </th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                            Blood Group
+                          </th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                            Units
+                          </th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                            Recipient
+                          </th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
+                            Status
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {donations.map((donation) => (
                           <tr key={donation._id}>
                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                              {formatDate(`${donation.availableDate}T${donation.availableTime}`)}
+                              {formatDate(
+                                `${donation.availableDate}T${donation.availableTime}`
+                              )}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
                               {donation.bloodGroup}
@@ -375,11 +451,18 @@ export default function Dashboard() {
                               {donation.units}
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">
-                              {donation.recipient?.name || 'Unknown'}
+                              {donation.recipient?.name || "Unknown"}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${donation.status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)}
+                              <span
+                                className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  donation.status === "completed"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                                }`}
+                              >
+                                {donation.status.charAt(0).toUpperCase() +
+                                  donation.status.slice(1)}
                               </span>
                             </td>
                           </tr>
