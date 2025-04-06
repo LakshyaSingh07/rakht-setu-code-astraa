@@ -10,7 +10,7 @@ const sendEmail = require("../utils/sendEmail");
 // @access  Private (Admin only in the future)
 router.get("/", auth, async (req, res) => {
   try {
-    const donations = await Donation.find().populate("donorId").sort({ createdAt: -1 });
+    const donations = await Donation.find().populate("donorId").populate("recipientId").sort({ createdAt: -1 });
     res.json(donations);
   } catch (err) {
     console.error(err);

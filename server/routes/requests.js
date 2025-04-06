@@ -3,14 +3,38 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const BloodRequest = require("../models/BloodRequest");
 const User = require("../models/User");
+const Pickup = require("../models/Pickup");
 const sendEmail = require("../utils/sendEmail");
 
 // Get all requests
 router.get("/", auth, async (req, res) => {
-  const requests = await BloodRequest.find({ fulfilled: false }).populate(
-    "requestedBy"
-  );
-  res.json(requests);
+  try {
+    // Get query parameters
+    const { bloodGroup, excludeCompletedPickups } = req.query;
+    
+    // Fetch all requests with their requestedBy information
+    let requests = await BloodRequest.find().populate("requestedBy");
+    
+    // Filter by blood group if specified
+    if (bloodGroup) {
+      requests = requests.filter(request => request.bloodGroup === bloodGroup);
+    }
+    
+    // Filter out requests with completed pickups if specified
+    if (excludeCompletedPickups === 'true') {
+      // Get all completed pickups
+      const completedPickups = await Pickup.find({ status: 'completed' });
+      const completedRequestIds = completedPickups.map(pickup => pickup.request.toString());
+      
+      // Filter out requests that have completed pickups
+      requests = requests.filter(request => !completedRequestIds.includes(request._id.toString()));
+    }
+    
+    res.json(requests);
+  } catch (error) {
+    console.error("Error fetching requests:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 // Create request
